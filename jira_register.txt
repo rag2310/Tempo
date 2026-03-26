@@ -1,0 +1,6 @@
+Jira Ticket: AUTH-102
+Title: Implement User Registration Screen
+
+Description:
+We need to add a registration flow so new users can create an account. The screen should collect Name, Email, and Password. After a successful registration, the user should be automatically logged in and taken to
+the Home screen. Please ensure this follows our official architecture standards and includes full test coverage.

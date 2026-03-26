@@ -29,6 +29,7 @@ import com.rago.tempo.ui.theme.TempoTheme
 @Composable
 fun LoginScreen(
     onLoginSuccess: () -> Unit,
+    onNavigateToRegister: () -> Unit,
     viewModel: LoginViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -43,7 +44,8 @@ fun LoginScreen(
         uiState = uiState,
         onEmailChanged = viewModel::onEmailChanged,
         onPasswordChanged = viewModel::onPasswordChanged,
-        onLoginClicked = viewModel::onLoginClicked
+        onLoginClicked = viewModel::onLoginClicked,
+        onNavigateToRegister = onNavigateToRegister
     )
 }
 
@@ -52,7 +54,8 @@ fun LoginContent(
     uiState: LoginUiState,
     onEmailChanged: (String) -> Unit,
     onPasswordChanged: (String) -> Unit,
-    onLoginClicked: () -> Unit
+    onLoginClicked: () -> Unit,
+    onNavigateToRegister: () -> Unit
 ) {
     Box(
         modifier = Modifier
@@ -114,6 +117,12 @@ fun LoginContent(
                     Text("Login")
                 }
             }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            androidx.compose.material3.TextButton(onClick = onNavigateToRegister) {
+                Text("Don't have an account? Register")
+            }
         }
     }
 }
@@ -126,7 +135,8 @@ fun LoginPreview() {
             uiState = LoginUiState(),
             onEmailChanged = {},
             onPasswordChanged = {},
-            onLoginClicked = {}
+            onLoginClicked = {},
+            onNavigateToRegister = {}
         )
     }
 }
@@ -139,7 +149,8 @@ fun LoginErrorPreview() {
             uiState = LoginUiState(error = "Invalid credentials"),
             onEmailChanged = {},
             onPasswordChanged = {},
-            onLoginClicked = {}
+            onLoginClicked = {},
+            onNavigateToRegister = {}
         )
     }
 }
@@ -152,7 +163,8 @@ fun LoginLoadingPreview() {
             uiState = LoginUiState(isLoading = true),
             onEmailChanged = {},
             onPasswordChanged = {},
-            onLoginClicked = {}
+            onLoginClicked = {},
+            onNavigateToRegister = {}
         )
     }
 }
