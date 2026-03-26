@@ -11,8 +11,13 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -22,7 +27,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -37,6 +44,10 @@ fun LoginScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
+    LaunchedEffect(Unit) {
+        viewModel.resetState()
+    }
+
     LaunchedEffect(uiState.isLoggedIn) {
         if (uiState.isLoggedIn) {
             onLoginSuccess()
@@ -47,6 +58,7 @@ fun LoginScreen(
         uiState = uiState,
         onEmailChanged = viewModel::onEmailChanged,
         onPasswordChanged = viewModel::onPasswordChanged,
+        onPasswordVisibilityToggle = viewModel::onPasswordVisibilityToggle,
         onLoginClicked = viewModel::onLoginClicked,
         onNavigateToRegister = onNavigateToRegister
     )
@@ -57,6 +69,7 @@ fun LoginContent(
     uiState: LoginUiState,
     onEmailChanged: (String) -> Unit,
     onPasswordChanged: (String) -> Unit,
+    onPasswordVisibilityToggle: () -> Unit,
     onLoginClicked: () -> Unit,
     onNavigateToRegister: () -> Unit
 ) {
@@ -85,7 +98,9 @@ fun LoginContent(
                 onValueChange = onEmailChanged,
                 label = { Text("Email") },
                 modifier = Modifier.fillMaxWidth(),
-                singleLine = true
+                singleLine = true,
+                isError = uiState.emailError != null,
+                supportingText = uiState.emailError?.let { { Text(stringResource(it)) } }
             )
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -94,8 +109,21 @@ fun LoginContent(
                 onValueChange = onPasswordChanged,
                 label = { Text("Password") },
                 modifier = Modifier.fillMaxWidth(),
-                visualTransformation = PasswordVisualTransformation(),
-                singleLine = true
+                visualTransformation = if (uiState.isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                trailingIcon = {
+                    val image = if (uiState.isPasswordVisible)
+                        Icons.Filled.Visibility
+                    else Icons.Filled.VisibilityOff
+
+                    val description = if (uiState.isPasswordVisible) "Hide password" else "Show password"
+
+                    IconButton(onClick = onPasswordVisibilityToggle) {
+                        Icon(imageVector = image, description)
+                    }
+                },
+                singleLine = true,
+                isError = uiState.passwordError != null,
+                supportingText = uiState.passwordError?.let { { Text(stringResource(it)) } }
             )
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -111,7 +139,7 @@ fun LoginContent(
             Button(
                 onClick = onLoginClicked,
                 modifier = Modifier.fillMaxWidth(),
-                enabled = !uiState.isLoading && uiState.email.isNotBlank() && uiState.password.isNotBlank()
+                enabled = !uiState.isLoading
             ) {
                 if (uiState.isLoading) {
                     CircularProgressIndicator(
@@ -141,6 +169,7 @@ fun LoginPreview() {
             uiState = LoginUiState(),
             onEmailChanged = {},
             onPasswordChanged = {},
+            onPasswordVisibilityToggle = {},
             onLoginClicked = {},
             onNavigateToRegister = {}
         )
@@ -155,6 +184,7 @@ fun LoginErrorPreview() {
             uiState = LoginUiState(error = "Invalid credentials"),
             onEmailChanged = {},
             onPasswordChanged = {},
+            onPasswordVisibilityToggle = {},
             onLoginClicked = {},
             onNavigateToRegister = {}
         )
@@ -169,6 +199,7 @@ fun LoginLoadingPreview() {
             uiState = LoginUiState(isLoading = true),
             onEmailChanged = {},
             onPasswordChanged = {},
+            onPasswordVisibilityToggle = {},
             onLoginClicked = {},
             onNavigateToRegister = {}
         )

@@ -11,8 +11,14 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -21,17 +27,14 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.rago.tempo.ui.theme.TempoTheme
-
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 
 @Composable
 fun RegisterScreen(
@@ -40,6 +43,10 @@ fun RegisterScreen(
     viewModel: RegisterViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    LaunchedEffect(Unit) {
+        viewModel.resetState()
+    }
 
     LaunchedEffect(uiState.isRegistered) {
         if (uiState.isRegistered) {
@@ -52,6 +59,7 @@ fun RegisterScreen(
         onNameChanged = viewModel::onNameChanged,
         onEmailChanged = viewModel::onEmailChanged,
         onPasswordChanged = viewModel::onPasswordChanged,
+        onPasswordVisibilityToggle = viewModel::onPasswordVisibilityToggle,
         onRegisterClicked = viewModel::onRegisterClicked,
         onBack = onBack
     )
@@ -63,6 +71,7 @@ fun RegisterContent(
     onNameChanged: (String) -> Unit,
     onEmailChanged: (String) -> Unit,
     onPasswordChanged: (String) -> Unit,
+    onPasswordVisibilityToggle: () -> Unit,
     onRegisterClicked: () -> Unit,
     onBack: () -> Unit
 ) {
@@ -90,7 +99,9 @@ fun RegisterContent(
                 label = { Text("Name") },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !uiState.isLoading,
-                singleLine = true
+                singleLine = true,
+                isError = uiState.nameError != null,
+                supportingText = uiState.nameError?.let { { Text(stringResource(it)) } }
             )
             Spacer(modifier = Modifier.height(16.dp))
             OutlinedTextField(
@@ -99,7 +110,9 @@ fun RegisterContent(
                 label = { Text("Email") },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !uiState.isLoading,
-                singleLine = true
+                singleLine = true,
+                isError = uiState.emailError != null,
+                supportingText = uiState.emailError?.let { { Text(stringResource(it)) } }
             )
             Spacer(modifier = Modifier.height(16.dp))
             OutlinedTextField(
@@ -107,9 +120,22 @@ fun RegisterContent(
                 onValueChange = onPasswordChanged,
                 label = { Text("Password") },
                 modifier = Modifier.fillMaxWidth(),
-                visualTransformation = PasswordVisualTransformation(),
+                visualTransformation = if (uiState.isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                trailingIcon = {
+                    val image = if (uiState.isPasswordVisible)
+                        Icons.Filled.Visibility
+                    else Icons.Filled.VisibilityOff
+
+                    val description = if (uiState.isPasswordVisible) "Hide password" else "Show password"
+
+                    IconButton(onClick = onPasswordVisibilityToggle) {
+                        Icon(imageVector = image, description)
+                    }
+                },
                 enabled = !uiState.isLoading,
-                singleLine = true
+                singleLine = true,
+                isError = uiState.passwordError != null,
+                supportingText = uiState.passwordError?.let { { Text(stringResource(it)) } }
             )
             Spacer(modifier = Modifier.height(32.dp))
             if (uiState.isLoading) {
@@ -150,6 +176,7 @@ fun RegisterPreview() {
             onNameChanged = {},
             onEmailChanged = {},
             onPasswordChanged = {},
+            onPasswordVisibilityToggle = {},
             onRegisterClicked = {},
             onBack = {}
         )
@@ -165,6 +192,7 @@ fun RegisterLoadingPreview() {
             onNameChanged = {},
             onEmailChanged = {},
             onPasswordChanged = {},
+            onPasswordVisibilityToggle = {},
             onRegisterClicked = {},
             onBack = {}
         )

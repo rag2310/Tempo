@@ -58,7 +58,7 @@ class LoginViewModelTest {
     fun `when login fails, state should update to error`() = runTest {
         // Arrange
         val errorMessage = "Invalid credentials"
-        coEvery { loginUseCase("test@example.com", "wrong") } returns flowOf(Result.failure(Exception(errorMessage)))
+        coEvery { loginUseCase("test@example.com", "password123") } returns flowOf(Result.failure(Exception(errorMessage)))
         viewModel = LoginViewModel(loginUseCase)
 
         // Act & Assert
@@ -68,7 +68,7 @@ class LoginViewModelTest {
             viewModel.onEmailChanged("test@example.com")
             awaitItem()
 
-            viewModel.onPasswordChanged("wrong")
+            viewModel.onPasswordChanged("password123")
             awaitItem()
 
             viewModel.onLoginClicked()
