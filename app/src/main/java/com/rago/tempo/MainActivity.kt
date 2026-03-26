@@ -15,7 +15,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.ui.NavDisplay
@@ -57,23 +57,24 @@ fun MainApp(
     getSessionUseCase: GetSessionUseCase = hiltViewModel<MainViewModel>().getSessionUseCase
 ) {
     val backStack = remember { mutableStateListOf<Route>() }
-    var isLoadingSession by remember { mutableStateOf(true) }
+    var hasLoadedSession by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        getSessionUseCase().collect { user ->
-            if (isLoadingSession) {
-                if (user != null) {
-                    backStack.add(Route.Home)
-                } else {
-                    backStack.add(Route.Login)
+        if (!hasLoadedSession) {
+            getSessionUseCase().collect { user ->
+                if (!hasLoadedSession) {
+                    if (user != null) {
+                        backStack.add(Route.Home)
+                    } else {
+                        backStack.add(Route.Login)
+                    }
+                    hasLoadedSession = true
                 }
-                isLoadingSession = false
             }
         }
     }
 
-    if (isLoadingSession) {
-        // Loading screen or empty box
+    if (!hasLoadedSession) {
         return
     }
 
@@ -103,6 +104,9 @@ fun MainApp(
                         onRegisterSuccess = {
                             backStack.clear()
                             backStack.add(Route.Home)
+                        },
+                        onBack = {
+                            backStack.removeAt(backStack.size - 1)
                         }
                     )
                 }
