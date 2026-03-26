@@ -1,0 +1,5 @@
+Jira Ticket: PROJ-42
+Title: User Login Screen
+
+Description:
+We need a login screen so users can enter the app. It should ask for email and password. If the login works, take them to the main home screen. Please make sure it looks good and follows the project standards.
